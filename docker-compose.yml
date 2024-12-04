@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  # MongoDB containers
+  mongo1:
+    image: mongo:latest
+    container_name: mongo1
+    ports:
+      - "27017:27017"
+    command: --replSet rs0
+    networks:
+      mongo-network:
+        ipv4_address: 172.20.0.2
+    volumes:
+      - mongo1-data:/data/db
+
+  mongo2:
+    image: mongo:latest
+    container_name: mongo2
+    ports:
+      - "27018:27017"
+    command: --replSet rs0
+    networks:
+      mongo-network:
+        ipv4_address: 172.20.0.3
+    volumes:
+      - mongo2-data:/data/db
+
+  mongo3:
+    image: mongo:latest
+    container_name: mongo3
+    ports:
+      - "27019:27017"
+    command: --replSet rs0
+    networks:
+      mongo-network:
+        ipv4_address: 172.20.0.4
+    volumes:
+      - mongo3-data:/data/db
+
+  mongo4:
+    image: mongo:latest
+    container_name: mongo4
+    ports:
+      - "27020:27017"
+    command: --replSet rs0
+    networks:
+      mongo-network:
+        ipv4_address: 172.20.0.5
+    volumes:
+      - mongo4-data:/data/db
+
+  # Redis container to capture MongoDB requests
+  redis:
+    image: redis:latest
+    container_name: redis1
+    ports:
+      - "6380:6379"
+    networks:
+      mongo-network:
+        ipv4_address: 172.20.0.6
+
+  # Node.js application container
+  app:
+    build: .
+    container_name: app
+    ports:
+      - "3000:3000"
+    environment:
+      MONGO_URI: "mongodb://mongo1:27017,mongo2:27017,mongo3:27017,mongo4:27017/caso1e?replicaSet=rs0"
+      REDIS_HOST: redis
+      REDIS_PORT: 6380
+    depends_on:
+      - mongo1
+      - mongo2
+      - mongo3
+      - mongo4
+      - redis
+    networks:
+      - mongo-network
+    volumes:
+      - .:/usr/src/app
+
+networks:
+  mongo-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+volumes:
+  mongo1-data:
+  mongo2-data:
+  mongo3-data:
+  mongo4-data:
