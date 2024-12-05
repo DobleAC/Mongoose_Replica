@@ -65,7 +65,7 @@ services:
     build: .
     container_name: app
     ports:
-      - "3000:3000"
+      - "3001:3001"
     environment:
       MONGO_URI: "mongodb://mongo1:27017,mongo2:27017,mongo3:27017,mongo4:27017/caso1e?replicaSet=rs0"
       REDIS_HOST: redis
